@@ -29,8 +29,8 @@ async def add_product(product_req: ProductRequest):
     session.add(new_product)
     session.flush()
     # get id of the inserted product
-    session.refresh(new_product, attribute_names=['id'])
-    data = {"product_id": new_product.id}
+    session.refresh(new_product, attribute_names=['seller_email'])
+    data = {"product_id": new_product.seller_email}
     session.commit()
     session.close()
     return Response(data, 200, "Product added successfully.", False)
@@ -38,10 +38,10 @@ async def add_product(product_req: ProductRequest):
 
 @router.put("/update")
 async def update_product(product_update_req: ProductUpdateRequest):
-    product_id = product_update_req.product_id
+    seller_email = product_update_req.seller_email
     session = database.get_db_session(engine)
     try:
-        is_product_updated = session.query(Product).filter(Product.id == product_id).update({
+        is_product_updated = session.query(Product).filter(Product.seller_email == seller_email).update({
             Product.name: product_update_req.name, Product.price: product_update_req.price,
             Product.seller_email: product_update_req.seller_email,
             Product.is_available: product_update_req.is_available,
@@ -55,11 +55,11 @@ async def update_product(product_update_req: ProductUpdateRequest):
         if is_product_updated == 1:
             # After successful update, retrieve updated data from db
             data = session.query(Product).filter(
-                Product.id == product_id).one()
+                Product.seller_email == seller_email).one()
 
         elif is_product_updated == 0:
-            response_msg = "Product not updated. No product found with this id :" + \
-                str(product_id)
+            response_msg = "Product not updated. No product found with this email id :" + \
+                str(seller_email)
             error = True
             data = None
         return Response(data, response_code, response_msg, error)
@@ -110,3 +110,6 @@ async def read_all_products(created_by: str, page_size: int, page: int):
     data = session.query(Product).filter(and_(Product.created_by == created_by, Product.deleted == False)).order_by(
         desc(Product.created_at)).limit(page_size).offset((page-1)*page_size).all()
     return Response(data, 200, "Products retrieved successfully.", False)
+
+
+

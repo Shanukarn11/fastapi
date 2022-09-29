@@ -26,7 +26,7 @@ class Database():
 
     def get_db_session(self,engine):
         try:
-            Session = sessionmaker(bind=engine)
+            Session = sessionmaker(bind=engine,autocommit=False,autoflush=False,)
             session = Session()
             return session
         except Exception as ex:
